@@ -1,0 +1,79 @@
+FROM ubuntu:22.04
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        build-essential \
+        wget \
+        apache2 \
+        ghostscript \
+        libapache2-mod-php \
+        mysql-server \
+        curl \
+        php \
+        php-bcmath \
+        php-curl \
+        php-imagick \
+        php-intl \
+        php-json \
+        php-mbstring \
+        php-mysql \
+        php-xml \
+        php-zip \
+        dos2unix \
+        php-cli
+#RUN apt install php-cli unzip -y
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://wordpress.org/latest.tar.gz && \
+    tar -xvf latest.tar.gz && \
+    mv latest.tar.gz wordpress && \
+    mv wordpress /var/www/html/     
+RUN chown -R www-data:www-data /var/www/
+#COPY . . /var/www/html 
+#COPY /wp-activate.php /var/www/html && \
+#     /wp-blog-header.php /var/www/html && \
+#     /wp-comments-post.php /var/www/html && \
+#     /wp-config-sample.php /var/www/html && \
+#     /wp-cron.php /var/www/html && \
+#     /wp-links-opml.php /var/www/html && \
+#     /wp-load.php /var/www/html && \
+#     /wp-login.php /var/www/html && \
+#     /wp-mail.php /var/www/html && \
+#     /wp-mail.php /var/www/html && \
+#    /wp-setting.php /var/www/html && \
+#     /wp-signup.php /var/www/html && \
+#     /wp-traceback.php /var/www/html && \
+#     /xmlrpc.php /var/www/html && \
+
+COPY /wordpress.conf /etc/apache2/sites-available/wordpress.conf
+
+COPY astra /var/www/html/wordpress/wp-content/themes/astra
+
+RUN a2ensite wordpress && \
+    a2enmod rewrite && \
+    a2dissite 000-default
+
+#COPY mysql.sh /root
+COPY /docker-entrypoint.sh /root
+#COPY wp-config.php /root
+#RUN chmod 777 /root/wp-config.php && \
+    #chown www-data:www-data /root/wp-config.php
+#RUN mv /root/wp-config.php /var/www/html/wordpress
+RUN dos2unix /root/docker-entrypoint.sh
+RUN chmod +x /root/docker-entrypoint.sh
+WORKDIR /root
+
+#RUN dos2unix mysql.sh
+
+
+EXPOSE 80
+
+ENTRYPOINT ["/root/docker-entrypoint.sh"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
