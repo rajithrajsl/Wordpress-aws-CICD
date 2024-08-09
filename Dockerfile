@@ -35,13 +35,6 @@ RUN apt-get update \
 RUN mkdir -p /var/www/html/Wordpress 
 COPY wordpress /var/www/html/Wordpress
 
-# Install WordPress
-#RUN curl -o wordpress.tar.gz -SL https://wordpress.org/latest.tar.gz && \
-#    mkdir -p /var/www/html/Wordpress && \
-#    tar -xzf wordpress.tar.gz -C /var/www/html/Wordpress --strip-components=1 && \
-#    rm wordpress.tar.gz && \
-#    chown -R www-data:www-data /var/www/html/Wordpress
-
 RUN chown -R www-data:www-data /var/www/
 
 COPY wordpress.conf /etc/apache2/sites-available/wordpress.conf
